@@ -36,6 +36,8 @@ import (
 	// +kubebuilder:scaffold:imports
 
 	harborCtrl "github.com/ovh/harbor-operator/controllers/harbor"
+	"github.com/ovh/harbor-operator/pkg/controllers/common"
+	"github.com/ovh/harbor-operator/pkg/controllers/health"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 	"github.com/ovh/harbor-operator/pkg/scheme"
 )
@@ -89,10 +91,16 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).NotTo(HaveOccurred(), "failed to create manager")
 
 	controller := &harborCtrl.Reconciler{
-		Client:     mgr.GetClient(),
-		Log:        logf.Log,
-		Name:       "test-operator",
-		Version:    "test",
+		HealthClient: health.Client{
+			Scheme: s,
+		},
+		Log: logf.Log,
+		Controller: common.Controller{
+			Name:    "test-operator",
+			Version: "test",
+			Client:  mgr.GetClient(),
+			Scheme:  s,
+		},
 		Scheme:     s,
 		RestConfig: mgr.GetConfig(),
 	}

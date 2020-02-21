@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	containerregistryv1alpha1 "github.com/ovh/harbor-operator/api/v1alpha1"
-	"github.com/ovh/harbor-operator/pkg/controllers/harbor"
+	"github.com/ovh/harbor-operator/pkg/controllers"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 	"github.com/ovh/harbor-operator/pkg/manager"
 	"github.com/ovh/harbor-operator/pkg/scheme"
@@ -70,7 +70,7 @@ func main() {
 	}
 	defer traCon.Close()
 
-	reconciler, err := harbor.New(ctx, OperatorName, OperatorVersion)
+	reconciler, err := controllers.New(ctx, OperatorName, OperatorVersion)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Harbor")
 		os.Exit(exitCodeFailure)
