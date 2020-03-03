@@ -9,7 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	containerregistryv1alpha2 "github.com/ovh/harbor-operator/api/v1alpha2"
-	"github.com/ovh/harbor-operator/pkg/factories/application"
 )
 
 const (
@@ -17,17 +16,10 @@ const (
 )
 
 func (r *Reconciler) GetService(ctx context.Context, portal *containerregistryv1alpha2.Portal) (*corev1.Service, error) {
-	operatorName := application.GetName(ctx)
-
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-portal", portal.Name),
-			Namespace: portal.Namespace,
-			Labels: map[string]string{
-				"app":      containerregistryv1alpha2.PortalName,
-				"harbor":   harborName,
-				"operator": operatorName,
-			},
+			Namespace: portal.GetNamespace(),
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
@@ -37,9 +29,8 @@ func (r *Reconciler) GetService(ctx context.Context, portal *containerregistryv1
 				},
 			},
 			Selector: map[string]string{
-				"app":      containerregistryv1alpha2.PortalName,
-				"harbor":   harborName,
-				"operator": operatorName,
+				"portal-name":      portal.GetName(),
+				"portal-namespace": portal.GetNamespace(),
 			},
 		},
 	}, nil
