@@ -9,7 +9,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	containerregistryv1alpha1 "github.com/ovh/harbor-operator/api/v1alpha1"
+	containerregistryv1alpha2 "github.com/ovh/harbor-operator/api/v1alpha2"
 	"github.com/ovh/harbor-operator/pkg/controllers"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 	"github.com/ovh/harbor-operator/pkg/manager"
@@ -70,19 +70,13 @@ func main() {
 	}
 	defer traCon.Close()
 
-	reconciler, err := controllers.New(ctx, OperatorName, OperatorVersion)
-	if err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Harbor")
-		os.Exit(exitCodeFailure)
-	}
-
-	if err := reconciler.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to setup controller", "controller", "Harbor")
-		os.Exit(exitCodeFailure)
-	}
-
-	if err := (&containerregistryv1alpha1.Harbor{}).SetupWebhookWithManager(mgr); err != nil {
+	if err := (&containerregistryv1alpha2.Harbor{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Harbor")
+		os.Exit(exitCodeFailure)
+	}
+
+	if err := (controllers.SetupWithManager(ctx, mgr, OperatorVersion)); err != nil {
+		setupLog.Error(err, "unable to setup controllers")
 		os.Exit(exitCodeFailure)
 	}
 

@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	containerregistryv1alpha1 "github.com/ovh/harbor-operator/api/v1alpha1"
+	containerregistryv1alpha2 "github.com/ovh/harbor-operator/api/v1alpha2"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 )
 
@@ -55,12 +55,12 @@ var _ = Context("Inside of a new namespace", func() {
 	Describe("Creating Harbor resources", func() {
 		Context("with invalid version", func() {
 			It("should raise an error", func() {
-				harbor := &containerregistryv1alpha1.Harbor{
+				harbor := &containerregistryv1alpha2.Harbor{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "harbor-invalid-semver",
 						Namespace: ns.Name,
 					},
-					Spec: containerregistryv1alpha1.HarborSpec{
+					Spec: containerregistryv1alpha2.HarborSpec{
 						HarborVersion: "invalid-semver",
 						PublicURL:     publicURL.String(),
 					},
@@ -73,12 +73,12 @@ var _ = Context("Inside of a new namespace", func() {
 
 		Context("with invalid public url", func() {
 			It("should raise an error", func() {
-				harbor := &containerregistryv1alpha1.Harbor{
+				harbor := &containerregistryv1alpha2.Harbor{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "harbor-invalid-url",
 						Namespace: ns.Name,
 					},
-					Spec: containerregistryv1alpha1.HarborSpec{
+					Spec: containerregistryv1alpha2.HarborSpec{
 						HarborVersion: "1.9.1",
 						PublicURL:     "123::bad::dns",
 					},
@@ -98,11 +98,11 @@ var _ = Context("Inside of a new namespace", func() {
 				Expect(k8sClient.Create(ctx, harbor)).To(Succeed())
 				Eventually(getHarbor).Should(Succeed(), "harbor resource should exist")
 
-				getConditions := func(harbor *containerregistryv1alpha1.Harbor) []containerregistryv1alpha1.HarborCondition {
+				getConditions := func(harbor *containerregistryv1alpha2.Harbor) []containerregistryv1alpha2.ComponentCondition {
 					return harbor.Status.Conditions
 				}
 				Eventually(getResourceFunc(ctx, key, harbor, getConditions), applyTimeoutInterval).Should(ContainElement(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-					"Type":   BeEquivalentTo(containerregistryv1alpha1.AppliedConditionType),
+					"Type":   BeEquivalentTo(containerregistryv1alpha2.AppliedConditionType),
 					"Status": BeEquivalentTo(corev1.ConditionTrue),
 				})), "harbor resource should be applied")
 			})
@@ -127,7 +127,7 @@ var _ = Context("Inside of a new namespace", func() {
 
 				Expect(k8sClient.Get(ctx, key, harbor)).To(Succeed())
 
-				getObservedGeneration := func(harbor *containerregistryv1alpha1.Harbor) int64 {
+				getObservedGeneration := func(harbor *containerregistryv1alpha2.Harbor) int64 {
 					return harbor.Status.ObservedGeneration
 				}
 				Eventually(getResourceFunc(ctx, key, harbor, getObservedGeneration), applyTimeoutInterval).Should(BeNumerically(">=", harbor.GetGeneration()), "ObservedGeneration should math Generation")
@@ -161,7 +161,7 @@ var _ = Context("Inside of a new namespace", func() {
 	})
 })
 
-func getUpdateFunc(ctx context.Context, harbor *containerregistryv1alpha1.Harbor) func() error {
+func getUpdateFunc(ctx context.Context, harbor *containerregistryv1alpha2.Harbor) func() error {
 	return func() error {
 		return k8sClient.Update(ctx, harbor)
 	}
@@ -183,31 +183,35 @@ func getResourceFunc(ctx context.Context, key client.ObjectKey, obj runtime.Obje
 	}
 }
 
-func newValidHarborTest(ns string) (*containerregistryv1alpha1.Harbor, client.ObjectKey) {
+func newValidHarborTest(ns string) (*containerregistryv1alpha2.Harbor, client.ObjectKey) {
 	name := newName("harbor")
 	publicURL := url.URL{
 		Scheme: "http",
 		Host:   "the.dns",
 	}
 
-	harbor := &containerregistryv1alpha1.Harbor{
+	harbor := &containerregistryv1alpha2.Harbor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: ns,
 		},
-		Spec: containerregistryv1alpha1.HarborSpec{
+		Spec: containerregistryv1alpha2.HarborSpec{
 			HarborVersion:       "1.10.0",
 			PublicURL:           publicURL.String(),
 			AdminPasswordSecret: "admin-secret",
-			Components: containerregistryv1alpha1.HarborComponents{
-				Core: &containerregistryv1alpha1.CoreComponent{
-					DatabaseSecret: "core-database-secret",
+			Components: containerregistryv1alpha2.HarborComponents{
+				Core: &containerregistryv1alpha2.CoreComponent{
+					CoreConfig: containerregistryv1alpha2.CoreConfig{
+						DatabaseSecret: "core-database-secret",
+					},
 				},
-				JobService: &containerregistryv1alpha1.JobServiceComponent{
-					RedisSecret: "jobservice-redis-secret",
+				JobService: &containerregistryv1alpha2.JobServiceComponent{
+					JobServiceConfig: containerregistryv1alpha2.JobServiceConfig{
+						RedisSecret: "jobservice-redis-secret",
+					},
 				},
-				Portal:   &containerregistryv1alpha1.PortalComponent{},
-				Registry: &containerregistryv1alpha1.RegistryComponent{},
+				Portal:   &containerregistryv1alpha2.PortalComponent{},
+				Registry: &containerregistryv1alpha2.RegistryComponent{},
 			},
 		},
 	}

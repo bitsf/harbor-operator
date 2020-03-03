@@ -1,4 +1,4 @@
-apiVersion: containerregistry.ovhcloud.com/v1alpha1
+apiVersion: containerregistry.ovhcloud.com/v1alpha2
 kind: Harbor
 metadata:
   name: harbor-sample

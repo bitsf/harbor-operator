@@ -11,13 +11,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	containerregistryv1alpha1 "github.com/ovh/harbor-operator/api/v1alpha1"
+	containerregistryv1alpha2 "github.com/ovh/harbor-operator/api/v1alpha2"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
+)
+
+const (
+	ComponentNameLabel = "containerregistry.ovhcloud.com/component"
 )
 
 var (
@@ -57,14 +62,14 @@ var (
 // +kubebuilder:rbac:groups="cert-manager.io",resources="certificates",verbs=delete
 // +kubebuilder:rbac:groups="networking.k8s.io",resources="ingresses",verbs=delete
 
-func (r *Controller) DeleteResourceCollection(ctx context.Context, harbor *containerregistryv1alpha1.Harbor, componentName string, gvk schema.GroupVersionKind) error {
+func (r *Controller) DeleteResourceCollection(ctx context.Context, owner metav1.Object, componentName string, gvk schema.GroupVersionKind) error {
 	u := &unstructured.UnstructuredList{}
 	u.SetGroupVersionKind(gvk)
 
 	matchingLabel := client.MatchingLabels{
-		containerregistryv1alpha1.ComponentNameLabel: componentName,
+		containerregistryv1alpha2.OperatorNameLabel: r.GetName(),
 	}
-	inNamespace := client.InNamespace(harbor.GetNamespace())
+	inNamespace := client.InNamespace(owner.GetNamespace())
 
 	// TODO Use r.Client.DeleteAllOf function
 
@@ -84,12 +89,20 @@ func (r *Controller) DeleteResourceCollection(ctx context.Context, harbor *conta
 
 	count := 0
 	err = u.EachListItem(func(object runtime.Object) error {
-		err := r.Client.Delete(ctx, object)
-		err = client.IgnoreNotFound(err)
-		if err == nil {
-			count++
+		owners := object.(metav1.Object).GetOwnerReferences()
+		for _, owner := range owners {
+			if owner.Controller != nil && *owner.Controller {
+
+				err := r.Client.Delete(ctx, object)
+				err = client.IgnoreNotFound(err)
+				if err == nil {
+					count++
+				}
+				return err
+			}
 		}
-		return err
+
+		return nil
 	})
 
 	logger.Get(ctx).Info(fmt.Sprintf("%d/%d resources deleted", count, countToDelete), "GVK.Group", gvk.Group, "GVK.Version", gvk.Version, "GVK.Kind", gvk.Kind)
@@ -105,7 +118,7 @@ func (r *Controller) DeleteResourceCollection(ctx context.Context, harbor *conta
 	return nil
 }
 
-func (r *Controller) DeleteComponent(ctx context.Context, harbor *containerregistryv1alpha1.Harbor, componentName string) error {
+func (r *Controller) DeleteComponent(ctx context.Context, owner metav1.Object, componentName string) error {
 	var g errgroup.Group
 
 	l := logger.Get(ctx).WithValues("Component", componentName)
@@ -117,7 +130,7 @@ func (r *Controller) DeleteComponent(ctx context.Context, harbor *containerregis
 		gvk := gvk
 
 		g.Go(func() error {
-			err := r.DeleteResourceCollection(ctx, harbor, componentName, gvk)
+			err := r.DeleteResourceCollection(ctx, owner, componentName, gvk)
 			return errors.Wrapf(err, "deletecollection failed for %s", gvk.String())
 		})
 	}
