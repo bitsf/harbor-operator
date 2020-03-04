@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	cmutation "github.com/ovh/harbor-operator/pkg/controllers/mutation"
+	cmutation "github.com/ovh/harbor-operator/pkg/controllers/common/mutation"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 	"github.com/ovh/harbor-operator/pkg/factories/owner"
 	"github.com/ovh/harbor-operator/pkg/resources"

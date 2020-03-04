@@ -1,7 +1,7 @@
 package common
 
 import (
-	serrors "github.com/ovh/harbor-operator/pkg/controllers/errors"
+	serrors "github.com/ovh/harbor-operator/pkg/controllers/common/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 

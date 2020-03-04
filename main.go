@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	containerregistryv1alpha2 "github.com/ovh/harbor-operator/api/v1alpha2"
-	"github.com/ovh/harbor-operator/pkg/controllers"
+	"github.com/ovh/harbor-operator/pkg/controllers/setup"
 	"github.com/ovh/harbor-operator/pkg/factories/logger"
 	"github.com/ovh/harbor-operator/pkg/manager"
 	"github.com/ovh/harbor-operator/pkg/scheme"
@@ -75,7 +75,7 @@ func main() {
 		os.Exit(exitCodeFailure)
 	}
 
-	if err := (controllers.SetupWithManager(ctx, mgr, OperatorVersion)); err != nil {
+	if err := (setup.SetupWithManager(ctx, mgr, OperatorVersion)); err != nil {
 		setupLog.Error(err, "unable to setup controllers")
 		os.Exit(exitCodeFailure)
 	}
