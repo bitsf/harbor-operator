@@ -25,13 +25,13 @@ func NewService(service *corev1.Service, mutate MutateService) resources.Mutable
 
 			defer func() { result.Spec.ClusterIP = clusterIP }()
 
-			for _, port := range serviceResult.Spec.Ports {
+			for _, port := range result.Spec.Ports {
 				port := port
 
 				defer func() {
-					ports := make([]corev1.ServicePort, len(serviceResult.Spec.Ports))
+					ports := make([]corev1.ServicePort, len(result.Spec.Ports))
 
-					for i, p := range serviceResult.Spec.Ports {
+					for i, p := range result.Spec.Ports {
 						if p.Name == port.Name {
 							p.NodePort = port.NodePort
 						}
@@ -39,7 +39,7 @@ func NewService(service *corev1.Service, mutate MutateService) resources.Mutable
 						ports[i] = p
 					}
 
-					serviceResult.Spec.Ports = ports
+					result.Spec.Ports = ports
 				}()
 			}
 
