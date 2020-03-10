@@ -2,8 +2,15 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
+- bases/containerregistry.ovhcloud.com_chartmuseums.yaml
+- bases/containerregistry.ovhcloud.com_clairs.yaml
 - bases/containerregistry.ovhcloud.com_harbors.yaml
+- bases/containerregistry.ovhcloud.com_jobservices.yaml
+- bases/containerregistry.ovhcloud.com_notaryservers.yaml
+- bases/containerregistry.ovhcloud.com_notarysigners.yaml
 - bases/containerregistry.ovhcloud.com_portals.yaml
+- bases/containerregistry.ovhcloud.com_registries.yaml
+- bases/containerregistry.ovhcloud.com_registrycontrollers.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
