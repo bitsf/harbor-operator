@@ -105,6 +105,10 @@ func (r *Reconciler) GetCoreIngresse(ctx context.Context, harbor *containerregis
 }
 
 func (r *Reconciler) GetNotaryServerIngresse(ctx context.Context, harbor *containerregistryv1alpha2.Harbor) (*netv1.Ingress, error) {
+	if harbor.Spec.Components.NotaryServer == nil {
+		return nil, nil
+	}
+
 	u, err := url.Parse(harbor.Spec.Components.NotaryServer.PublicURL)
 	if err != nil {
 		panic(errors.Wrap(err, "invalid url"))

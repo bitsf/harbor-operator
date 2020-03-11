@@ -4,6 +4,7 @@
 resources:
 - bases/containerregistry.ovhcloud.com_chartmuseums.yaml
 - bases/containerregistry.ovhcloud.com_clairs.yaml
+- bases/containerregistry.ovhcloud.com_cores.yaml
 - bases/containerregistry.ovhcloud.com_harbors.yaml
 - bases/containerregistry.ovhcloud.com_jobservices.yaml
 - bases/containerregistry.ovhcloud.com_notaryservers.yaml
@@ -16,13 +17,13 @@ resources:
 patchesStrategicMerge:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
-- patches/webhook_in_harbors.yaml
+#- patches/webhook_in_harbors.yaml
 #- patches/webhook_in_portals.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
-- patches/cainjection_in_harbors.yaml
+#- patches/cainjection_in_harbors.yaml
 #- patches/cainjection_in_portals.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
