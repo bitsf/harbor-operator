@@ -328,6 +328,10 @@ func (r *Reconciler) GetDefaultNotarySignerMigrationSource(ctx context.Context, 
 type NotarySignerMigrationSecret graph.Resource
 
 func (r *Reconciler) AddNotarySignerMigrationSecret(ctx context.Context, harbor *goharborv1alpha2.Harbor) (NotarySignerMigrationSecret, error) {
+	if *harbor.Spec.Notary.MigrationEnabled {
+		return nil, nil
+	}
+
 	authSecret, err := r.GetNotarySignerMigrationSecret(ctx, harbor)
 	if err != nil {
 		return nil, errors.Wrap(err, "get")

@@ -172,7 +172,7 @@ type NotaryComponentSpec struct {
 	Signer harbormetav1.ComponentSpec `json:"signer"`
 
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default=true
+	// +kubebuilder:default=false
 	// Inject migration configuration to notary resources
 	MigrationEnabled *bool `json:"migrationEnabled,omitempty"`
 }

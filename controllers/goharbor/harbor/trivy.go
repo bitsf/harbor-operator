@@ -2,6 +2,7 @@ package harbor
 
 import (
 	"context"
+	"github.com/ovh/configstore"
 
 	goharborv1alpha2 "github.com/goharbor/harbor-operator/apis/goharbor.io/v1alpha2"
 	harbormetav1 "github.com/goharbor/harbor-operator/apis/meta/v1alpha1"
@@ -75,6 +76,9 @@ func (r *Reconciler) GetTrivyUpdateSecret(ctx context.Context, harbor *goharborv
 
 	token, err := r.GetGithubToken(TrivyGithubCredentialsConfigKey)
 	if err != nil {
+		if _, ok := err.(configstore.ErrItemNotFound); ok {
+			return nil, nil
+		}
 		return nil, serrors.UnrecoverrableError(err, serrors.OperatorReason, "cannot get default github credentials")
 	}
 
