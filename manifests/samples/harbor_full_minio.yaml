@@ -57,6 +57,7 @@ metadata:
   name: harborcluster-sample
   namespace: cluster-sample-ns
 spec:
+  logLevel: info
   imageSource:
     repository: quay.io/goharbor
   harborAdminPasswordRef: admin-core-secret
@@ -67,22 +68,31 @@ spec:
         host: core.harbor.domain
       tls:
         certificateRef: sample-public-certificate
+    notary:
+      ingress:
+        host: notary.harbor.domain
+      tls:
+        certificateRef: sample-public-certificate
   encryptionKeyRef: core-database-encryption
   internalTLS:
     enabled: true
   portal: {}
   registry: {}
-  trivy:
-    storage: {}
   core:
     tokenIssuer:
       name: selfsigned-issuer
       kind: Issuer
+  chartmuseum: {}
+  trivy:
+    skipUpdate: false
+    storage: {}
+  notary:
+    migrationEnabled: true
   inClusterDatabase:
     kind: PostgresSQL
     postgresSqlSpec:
       storage: 1Gi
-      replicas: 2
+      replicas: 1
       resources:
         limits:
           cpu: 500m
